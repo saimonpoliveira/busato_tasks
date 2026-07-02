@@ -33,21 +33,69 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("invalid MAX_UPLOAD_SIZE_MB: %w", err)
 	}
 
-	corsOrigins := strings.Split(getEnv("CORS_ORIGINS", "http://localhost:5173"), ",")
-	for i, origin := range corsOrigins {
-		corsOrigins[i] = strings.TrimSpace(origin)
-	}
+	corsOrigins := resolveCORSOrigins()
 
 	return &Config{
 		Port:               getEnv("PORT", "8080"),
-		GinMode:            getEnv("GIN_MODE", "debug"),
-		DatabaseURL:        getEnv("DATABASE_URL", ""),
+		GinMode:            getEnv("GIN_MODE", "release"),
+		DatabaseURL:        normalizeDatabaseURL(getEnv("DATABASE_URL", "")),
 		JWTSecret:          getEnv("JWT_SECRET", ""),
 		JWTExpirationHours: jwtExp,
 		UploadDir:          getEnv("UPLOAD_DIR", "./uploads"),
 		MaxUploadSizeMB:    maxUpload,
 		CORSOrigins:        corsOrigins,
 	}, nil
+}
+
+func resolveCORSOrigins() []string {
+	if explicit := getEnv("CORS_ORIGINS", ""); explicit != "" {
+		return splitAndTrim(explicit)
+	}
+
+	// Railway injects public domain for the frontend service
+	if railwayDomain := getEnv("RAILWAY_PUBLIC_DOMAIN", ""); railwayDomain != "" {
+		return []string{fmt.Sprintf("https://%s", railwayDomain)}
+	}
+
+	return []string{"http://localhost:5173"}
+}
+
+func normalizeDatabaseURL(url string) string {
+	if url == "" {
+		return ""
+	}
+
+	url = strings.Replace(url, "postgresql://", "postgres://", 1)
+
+	if strings.Contains(url, "sslmode=") {
+		return url
+	}
+
+	separator := "?"
+	if strings.Contains(url, "?") {
+		separator = "&"
+	}
+
+	if strings.Contains(url, "railway.internal") {
+		return url + separator + "sslmode=disable"
+	}
+
+	if strings.Contains(url, "railway") || strings.Contains(url, "neon.tech") {
+		return url + separator + "sslmode=require"
+	}
+
+	return url
+}
+
+func splitAndTrim(value string) []string {
+	parts := strings.Split(value, ",")
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if trimmed := strings.TrimSpace(part); trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
 }
 
 func (c *Config) Validate() error {

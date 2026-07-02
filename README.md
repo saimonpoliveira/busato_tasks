@@ -78,6 +78,18 @@ O frontend inicia em `http://localhost:5173`.
 Todos os endpoints de listagem suportam paginação, filtros, ordenação e pesquisa via query params:
 - `page`, `page_size`, `sort_by`, `sort_order`, `search`
 
+## Deploy no Railway
+
+Guia completo em [`docs/RAILWAY.md`](docs/RAILWAY.md).
+
+Resumo rápido:
+1. Crie um projeto Railway com 3 serviços: **PostgreSQL**, **backend** (`backend/`), **frontend** (`frontend/`)
+2. Backend: `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGINS`
+3. Frontend: `VITE_API_URL=https://seu-backend.up.railway.app/api/v1`
+4. Gere domínios públicos para backend e frontend
+
+Após o deploy, acesse pelo navegador ou celular Android pela URL pública do frontend.
+
 ## Funcionalidades
 
 - Autenticação JWT com registro e login
