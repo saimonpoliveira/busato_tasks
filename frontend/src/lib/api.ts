@@ -1,10 +1,20 @@
 import axios, { type AxiosError } from 'axios'
 import type { ApiError } from '@/types'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1'
+declare global {
+  interface Window {
+    __ENV__?: {
+      API_URL?: string
+    }
+  }
+}
+
+function getApiBaseUrl(): string {
+  return window.__ENV__?.API_URL || import.meta.env.VITE_API_URL || '/api/v1'
+}
 
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },

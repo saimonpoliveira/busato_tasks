@@ -202,6 +202,24 @@ Depois do deploy, o app fica acessível de qualquer lugar:
 - Faça redeploy com `NO_CACHE=1`
 - Use a branch `cursor/railway-deploy-71ab` (contém os arquivos de deploy)
 
+### Erro 404 ao criar conta / fazer login
+
+O frontend está chamando a API no endereço errado. Configure:
+
+**Frontend → Variables:**
+```
+VITE_API_URL=https://busatotasks-production.up.railway.app/api/v1
+```
+
+**Backend → Variables:**
+```
+CORS_ORIGINS=https://busatotasksfrontend-production.up.railway.app
+```
+
+Depois **Redeploy** do frontend (e backend se alterou CORS).
+
+O `start.sh` injeta a URL da API em runtime via `env-config.js` — não precisa rebuild se só mudar a variável e reiniciar.
+
 ### Erro de CORS no navegador
 - `CORS_ORIGINS` deve ser exatamente a URL do frontend (com `https://`, sem barra no final)
 
