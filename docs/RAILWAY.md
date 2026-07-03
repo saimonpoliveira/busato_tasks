@@ -4,13 +4,34 @@ Guia passo a passo para publicar o **Busato Tasks** no [Railway](https://railway
 
 ## Arquitetura no Railway
 
-Você vai criar **3 serviços** no mesmo projeto:
+Você vai criar **2 serviços** no Railway (+ banco Neon externo):
 
 | Serviço | Pasta raiz | Descrição |
 |---------|------------|-----------|
-| PostgreSQL | — | Banco de dados (plugin Railway) |
-| Backend | `backend/` | API Go |
-| Frontend | `frontend/` | React (Nginx) |
+| Backend | `backend` | API Go |
+| Frontend | `frontend` | React (Nginx) |
+| Banco | Neon (externo) | PostgreSQL — connection string em `DATABASE_URL` |
+
+---
+
+## ⚠️ Erro: "Railpack could not determine how to build" / "start.sh not found"
+
+Esse erro acontece quando o Railway tenta buildar a **raiz do repositório** em vez da pasta `backend/` ou `frontend/`.
+
+### Correção (faça em cada serviço)
+
+1. Abra o serviço no Railway → **Settings**
+2. Em **Source → Root Directory**, defina:
+   - Backend: `backend`
+   - Frontend: `frontend`
+3. Em **Variables**, adicione:
+   - `RAILWAY_DOCKERFILE_PATH` = `Dockerfile`
+   - `NO_CACHE` = `1` (apenas no primeiro redeploy após corrigir)
+4. Clique em **Redeploy**
+
+O log de build deve mostrar: `Using Detected Dockerfile`
+
+> Se ainda falhar, o projeto inclui `start.sh` e `nixpacks.toml` como fallback automático.
 
 ---
 
@@ -24,14 +45,11 @@ Você vai criar **3 serviços** no mesmo projeto:
 
 ---
 
-## Passo 2 — Adicionar PostgreSQL
+## Passo 2 — Banco de dados (Neon)
 
-1. No projeto, clique em **+ New**
-2. Escolha **Database → PostgreSQL**
-3. Aguarde o provisionamento
-4. Na aba **Variables** do Postgres, copie `DATABASE_URL` (será usada no backend)
+Use sua connection string do Neon na variável `DATABASE_URL` do backend.
 
-> Alternativa: use [Neon](https://neon.tech) e cole a connection string em `DATABASE_URL` do backend.
+Não é necessário criar PostgreSQL no Railway se você já usa Neon.
 
 ---
 
@@ -39,16 +57,17 @@ Você vai criar **3 serviços** no mesmo projeto:
 
 1. Clique em **+ New → GitHub Repo** (ou **Empty Service** e conecte o repo)
 2. Em **Settings → Source**:
-   - **Root Directory:** `backend`
+   - **Root Directory:** `backend` ← **obrigatório**
 3. Em **Settings → Build**:
-   - Builder: **Dockerfile** (detectado automaticamente via `railway.toml`)
+   - O builder deve usar **Dockerfile** (via `railway.json`)
 4. Em **Variables**, configure:
 
 | Variável | Valor |
 |----------|-------|
-| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (referência ao serviço Postgres) |
-| `JWT_SECRET` | Uma string longa e aleatória (ex: gere com `openssl rand -hex 32`) |
+| `DATABASE_URL` | Sua connection string do Neon |
+| `JWT_SECRET` | Uma string longa e aleatória |
 | `GIN_MODE` | `release` |
+| `RAILWAY_DOCKERFILE_PATH` | `Dockerfile` |
 | `CORS_ORIGINS` | URL do frontend (configure após o passo 4) |
 
 5. Em **Settings → Networking**, clique em **Generate Domain**
@@ -67,12 +86,13 @@ curl https://SUA-URL-BACKEND.up.railway.app/health
 
 1. Clique em **+ New → GitHub Repo**
 2. Em **Settings → Source**:
-   - **Root Directory:** `frontend`
+   - **Root Directory:** `frontend` ← **obrigatório**
 3. Em **Variables**, configure:
 
 | Variável | Valor |
 |----------|-------|
 | `VITE_API_URL` | `https://SUA-URL-BACKEND.up.railway.app/api/v1` |
+| `RAILWAY_DOCKERFILE_PATH` | `Dockerfile` |
 
 > **Importante:** `VITE_API_URL` é usada no **build**. Se mudar a URL do backend, faça **Redeploy** do frontend.
 
@@ -144,8 +164,14 @@ Depois do deploy, o app fica acessível de qualquer lugar:
 ## Solução de problemas
 
 ### Backend não conecta ao banco
-- Verifique se `DATABASE_URL` referencia o serviço Postgres: `${{Postgres.DATABASE_URL}}`
-- Confirme que Postgres e Backend estão no **mesmo projeto** Railway
+- Verifique se `DATABASE_URL` contém a connection string completa do Neon
+- A string deve incluir `sslmode=require`
+
+### Erro "Railpack could not determine how to build"
+- Confirme **Root Directory** = `backend` ou `frontend` (sem barra no final)
+- Adicione `RAILWAY_DOCKERFILE_PATH=Dockerfile`
+- Faça redeploy com `NO_CACHE=1`
+- Use a branch `cursor/railway-deploy-71ab` (contém os arquivos de deploy)
 
 ### Erro de CORS no navegador
 - `CORS_ORIGINS` deve ser exatamente a URL do frontend (com `https://`, sem barra no final)

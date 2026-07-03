@@ -16,9 +16,16 @@ RUN npm run build
 # Run
 FROM nginx:1.27-alpine
 
+RUN apk add --no-cache nodejs npm
+
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
 COPY --from=builder /app/dist /usr/share/nginx/html
+
+ENV PORT=80
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/start.sh"]
