@@ -59,9 +59,10 @@ export function ProjectsPage() {
         headerName: 'Ações',
         sortable: false,
         filter: false,
-        width: 160,
+        width: 180,
+        cellClass: 'ag-cell-actions',
         cellRenderer: (params: { data: Project }) => (
-          <div className="flex gap-2 py-2">
+          <div className="flex h-full items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => openEdit(params.data)}>
               Editar
             </Button>

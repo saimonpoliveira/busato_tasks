@@ -34,13 +34,15 @@ export function DataGrid<T>({
   )
 
   return (
-    <div className={cn('ag-theme-quartz w-full', className)} style={{ height: 'calc(100vh - 280px)' }}>
+    <div className={cn('ag-theme-quartz ag-grid-custom w-full', className)} style={{ height: 'calc(100vh - 280px)' }}>
       <AgGridReact<T>
         rowData={rowData}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         loading={loading}
         animateRows
+        rowHeight={56}
+        headerHeight={48}
         pagination
         paginationPageSize={20}
         paginationPageSizeSelector={[10, 20, 50, 100]}

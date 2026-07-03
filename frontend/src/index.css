@@ -93,3 +93,23 @@
     @apply bg-background text-foreground antialiased;
   }
 }
+
+.ag-grid-custom .ag-cell {
+  display: flex;
+  align-items: center;
+  overflow: visible;
+  line-height: normal;
+}
+
+.ag-grid-custom .ag-cell-wrapper {
+  align-items: center;
+  height: 100%;
+}
+
+.ag-grid-custom .ag-cell-value {
+  overflow: visible;
+}
+
+.ag-grid-custom .ag-row {
+  overflow: visible;
+}
