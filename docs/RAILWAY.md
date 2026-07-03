@@ -16,22 +16,51 @@ Você vai criar **2 serviços** no Railway (+ banco Neon externo):
 
 ## ⚠️ Erro: "Railpack could not determine how to build" / "start.sh not found"
 
-Esse erro acontece quando o Railway tenta buildar a **raiz do repositório** em vez da pasta `backend/` ou `frontend/`.
+**Causa mais comum:** o Root Directory está vazio ou errado. O Railway está buildando a raiz do repo (só README) em vez de `backend/` ou `frontend/`.
 
-### Correção (faça em cada serviço)
+### Correção obrigatória
 
-1. Abra o serviço no Railway → **Settings**
-2. Em **Source → Root Directory**, defina:
-   - Backend: `backend`
-   - Frontend: `frontend`
-3. Em **Variables**, adicione:
-   - `RAILWAY_DOCKERFILE_PATH` = `Dockerfile`
-   - `NO_CACHE` = `1` (apenas no primeiro redeploy após corrigir)
-4. Clique em **Redeploy**
+1. Abra o serviço → **Settings** → **Source**
+2. Defina **Root Directory** (sem barra no início):
 
-O log de build deve mostrar: `Using Detected Dockerfile`
+| Serviço | Root Directory |
+|---------|----------------|
+| Backend | `backend` |
+| Frontend | `frontend` |
 
-> Se ainda falhar, o projeto inclui `start.sh` e `nixpacks.toml` como fallback automático.
+3. Em **Settings**, defina o **Config file path** (caminho absoluto no repo):
+   - Backend: `/backend/railway.toml`
+   - Frontend: `/frontend/railway.toml`
+
+4. **Apague** a variável `RAILWAY_DOCKERFILE_PATH` (se existir)
+
+5. Adicione estas variáveis:
+
+**Backend:**
+```
+RAILPACK_GO_BIN=server
+DATABASE_URL=(sua URL Neon)
+JWT_SECRET=(string aleatória)
+GIN_MODE=release
+```
+
+**Frontend:**
+```
+VITE_API_URL=https://SUA-URL-BACKEND.up.railway.app/api/v1
+```
+
+6. **Settings → Build → Metal Build Environment → OFF**
+
+7. **Deployments → Redeploy**
+
+### Log esperado (backend)
+```
+Detected Go
+go build ...
+Starting ./server
+```
+
+Se ainda aparecer `start.sh not found` sem mencionar `go.mod`, o Root Directory **ainda está errado**.
 
 ---
 

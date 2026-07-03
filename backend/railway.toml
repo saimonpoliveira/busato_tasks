@@ -1,5 +1,6 @@
 [build]
-builder = "NIXPACKS"
+builder = "RAILPACK"
+buildCommand = "go build -ldflags='-s -w' -o server ./cmd/server"
 
 [deploy]
 startCommand = "./server"
