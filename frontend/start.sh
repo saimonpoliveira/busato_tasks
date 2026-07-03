@@ -5,14 +5,15 @@ PORT="${PORT:-80}"
 
 echo "Starting frontend on port ${PORT}..."
 
-if [ -f /etc/nginx/conf.d/default.conf ]; then
-  sed -i "s/listen 80;/listen ${PORT};/" /etc/nginx/conf.d/default.conf
+# Debian nginx config path
+if [ -f /etc/nginx/sites-available/default ]; then
+  sed -i "s/listen 80;/listen ${PORT};/" /etc/nginx/sites-available/default
   exec nginx -g 'daemon off;'
 fi
 
-if [ -d dist ]; then
-  exec npx --yes serve dist -s -l "${PORT}"
+if [ -d /usr/share/nginx/html ]; then
+  exec npx --yes serve /usr/share/nginx/html -s -l "${PORT}"
 fi
 
-echo "No dist/ or nginx config found"
+echo "No nginx config or static files found"
 exit 1

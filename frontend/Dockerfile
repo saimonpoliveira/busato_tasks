@@ -1,5 +1,5 @@
 # Build
-FROM node:20-alpine AS builder
+FROM node:20-bookworm-slim AS builder
 
 WORKDIR /app
 
@@ -14,11 +14,13 @@ ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # Run
-FROM nginx:1.27-alpine
+FROM debian:bookworm-slim
 
-RUN apk add --no-cache nodejs npm
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends nginx \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/sites-available/default
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
