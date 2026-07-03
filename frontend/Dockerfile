@@ -1,5 +1,5 @@
-# Build
-FROM node:20-bookworm-slim AS builder
+# Single-stage build (mais estável no Railway que multi-stage)
+FROM node:20-bookworm-slim
 
 WORKDIR /app
 
@@ -13,21 +13,10 @@ ENV VITE_API_URL=$VITE_API_URL
 
 RUN npm run build
 
-# Run
-FROM debian:bookworm-slim
+RUN npm install -g serve
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends nginx \
-    && rm -rf /var/lib/apt/lists/*
+ENV PORT=3000
 
-COPY nginx.conf /etc/nginx/sites-available/default
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
+EXPOSE 3000
 
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-ENV PORT=80
-
-EXPOSE 80
-
-CMD ["/start.sh"]
+CMD ["sh", "-c", "serve -s dist -l ${PORT}"]

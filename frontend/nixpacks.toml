@@ -8,4 +8,4 @@ cmds = ["npm ci"]
 cmds = ["npm run build"]
 
 [start]
-cmd = "chmod +x start.sh && ./start.sh"
+cmd = "npx serve dist -s -l $PORT"

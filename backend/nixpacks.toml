@@ -2,7 +2,7 @@
 nixPkgs = ["go_1_22"]
 
 [phases.build]
-cmds = ["chmod +x build.sh start.sh", "./build.sh"]
+cmds = ["go mod download", "go build -ldflags='-s -w' -o server ./cmd/server"]
 
 [start]
-cmd = "./start.sh"
+cmd = "./server"

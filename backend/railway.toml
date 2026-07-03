@@ -1,10 +1,8 @@
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
-buildCommand = "echo Using Dockerfile"
+builder = "NIXPACKS"
 
 [deploy]
-startCommand = "./start.sh"
+startCommand = "./server"
 healthcheckPath = "/health"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
