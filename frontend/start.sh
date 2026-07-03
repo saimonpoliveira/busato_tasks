@@ -1,9 +1,9 @@
 #!/bin/sh
 set -e
 
-echo "Building frontend..."
-npm ci
-npm run build
+PORT="${PORT:-3000}"
 
-echo "Starting frontend on port ${PORT:-3000}..."
-exec npx serve dist -s -l "${PORT:-3000}"
+echo "Starting frontend on port ${PORT}..."
+
+# serve v14+ exige formato tcp://host:port
+exec serve -s dist --listen "tcp://0.0.0.0:${PORT}"
