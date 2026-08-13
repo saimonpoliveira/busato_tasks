@@ -1,14 +1,16 @@
-import { Moon, Sun, LogOut } from 'lucide-react'
+import { Menu, Moon, Sun, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useSidebar } from '@/contexts/SidebarContext'
 
 export function Header() {
   const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
+  const { toggle, isOpen } = useSidebar()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -24,8 +26,16 @@ export function Header() {
     .slice(0, 2) || 'U'
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-background px-6">
-      <div />
+    <header className="flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggle}
+        aria-label={isOpen ? 'Recolher menu' : 'Abrir menu'}
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
+
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={toggleTheme}>
           {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
